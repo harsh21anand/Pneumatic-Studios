@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-const projectRequestRoutes = require('./routes/projectRequests');
+const projectRequestRoutes = require('./routes/project-requests');
 app.use('/api/project-requests', projectRequestRoutes);
 
 // Health check

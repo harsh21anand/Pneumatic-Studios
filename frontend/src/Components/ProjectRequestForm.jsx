@@ -83,9 +83,7 @@ const ProjectRequestForm = () => {
         Project Request Form
       </h1>
 
-      {/* ---- Remaining UI unchanged ---- */}
-      {/* 👆 Tumhara pura form UI already perfect hai — backend URL hi update karna tha */}
-
+   
       ...
     </form>
   );

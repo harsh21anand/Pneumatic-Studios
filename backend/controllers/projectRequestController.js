@@ -1,48 +1,61 @@
 const ProjectRequest = require('../models/ProjectRequest');
 
-// POST /api/project-requests - Save form data
+// POST /api/project-requests
 const createProjectRequest = async (req, res) => {
   try {
     const formData = req.body;
 
-    // Optional: Light pre-check (Mongoose will catch most anyway)
-    if (!formData.companyProjectName || !formData.productStage || !formData.timeline) {
-      return res.status(400).json({ 
-        message: 'Missing required fields', 
-        errors: { companyProjectName: 'Required', productStage: 'Required', timeline: 'Required' } 
+    // Quick manual required check (optional)
+    const requiredFields = ['companyProjectName', 'productStage', 'timeline'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: 'Missing required fields',
+        errors: missingFields.reduce((acc, field) => {
+          acc[field] = `${field} is required`;
+          return acc;
+        }, {})
       });
     }
 
-    const newRequest = new ProjectRequest(formData);
-    await newRequest.save(); // Triggers schema validation
+    // Save to DB (Mongoose full validation runs here)
+    const newRequest = await ProjectRequest.create(formData);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Project request submitted successfully!',
-      data: newRequest // Or sanitize: omit sensitive fields if needed
+      data: newRequest
     });
+
   } catch (error) {
-    console.error('Error saving project request:', error.name, error.message);
+    console.error('Error saving project request:', error);
 
+    // Mongoose validation errors
     if (error.name === 'ValidationError') {
-      // Format Mongoose errors for frontend (per-field)
       const errors = {};
-      Object.keys(error.errors).forEach(key => {
+
+      for (const key in error.errors) {
         errors[key] = error.errors[key].message;
-      });
-      return res.status(400).json({ 
-        message: 'Validation failed—please check the form', 
-        errors 
+      }
+
+      return res.status(400).json({
+        message: 'Validation failed — please correct the errors.',
+        errors
       });
     }
 
+    // Wrong type errors
     if (error.name === 'CastError') {
-      return res.status(400).json({ 
-        message: 'Invalid data type provided' 
+      return res.status(400).json({
+        message: 'Invalid data format',
+        field: error.path
       });
     }
 
-    // Generic server error (e.g., DB connection)
-    res.status(500).json({ message: 'Server error while saving request' });
+    // Unknown server issue
+    return res.status(500).json({
+      message: 'Internal server error while saving request'
+    });
   }
 };
 
