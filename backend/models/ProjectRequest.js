@@ -57,10 +57,10 @@ const projectRequestSchema = new mongoose.Schema({
     type: String,
     enum: {
       values: [
-        'ASAP (within 1-2 months)',
-        'Near Future (3-6 months)',
-        'Later Exploratory'
-      ],
+      'ASAP (within 1-2 months)',
+      'Near Future (3-6 months)',
+      'Later Exploratory'
+    ],
       message: '{VALUE} is not a valid timeline'
     },
     required: true
